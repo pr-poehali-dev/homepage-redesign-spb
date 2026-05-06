@@ -4,11 +4,10 @@ import Icon from "@/components/ui/icon";
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/848639bc-f2ca-455c-9fae-6c8499cdc395/files/4ad32356-a73a-48dc-a034-3c1d4a53983b.jpg";
 
 const NAV_LINKS = [
-  { label: "Каталог", id: "catalog" },
-  { label: "О компании", id: "about" },
-  { label: "Блог", id: "blog" },
-  { label: "Доставка", id: "delivery" },
-  { label: "Контакты", id: "contacts" },
+  { label: "Акции", id: "catalog" },
+  { label: "Готовые решения", id: "about" },
+  { label: "Оплата", id: "delivery" },
+  { label: "Магазины", id: "contacts" },
 ];
 
 const CATALOG_MENU = [
@@ -335,6 +334,18 @@ export default function Index() {
             </div>
 
             <button
+              className="hidden sm:flex p-2 rounded-full hover:bg-orange-50 transition-colors text-gray-600 hover:text-orange-600"
+              aria-label="Избранное"
+            >
+              <Icon name="Heart" size={20} />
+            </button>
+            <button
+              className="hidden sm:flex p-2 rounded-full hover:bg-orange-50 transition-colors text-gray-600 hover:text-orange-600"
+              aria-label="Личный кабинет"
+            >
+              <Icon name="CircleUser" size={20} />
+            </button>
+            <button
               onClick={() => scrollTo("catalog")}
               className="relative p-2 rounded-full hover:bg-orange-50 transition-colors"
               aria-label="Корзина"
@@ -361,11 +372,16 @@ export default function Index() {
 
         {mobileOpen && (
           <div className="md:hidden bg-white border-t border-orange-100 px-4 py-4 flex flex-col gap-3">
+            <button onClick={() => { scrollTo("catalog"); setMobileOpen(false); }} className="text-left text-base font-medium py-1 text-orange-600">Каталог</button>
             {NAV_LINKS.map((link) => (
               <button key={link.id} onClick={() => scrollTo(link.id)} className="text-left text-base font-medium py-1 text-gray-700 hover:text-orange-600 transition-colors">
                 {link.label}
               </button>
             ))}
+            <div className="flex gap-4 pt-2 border-t" style={{ borderColor: "hsl(30 20% 88%)" }}>
+              <button className="flex items-center gap-1.5 text-sm text-gray-600 font-body"><Icon name="Heart" size={16} /> Избранное</button>
+              <button className="flex items-center gap-1.5 text-sm text-gray-600 font-body"><Icon name="CircleUser" size={16} /> Кабинет</button>
+            </div>
           </div>
         )}
       </header>
