@@ -4,12 +4,31 @@ import Icon from "@/components/ui/icon";
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/848639bc-f2ca-455c-9fae-6c8499cdc395/files/4ad32356-a73a-48dc-a034-3c1d4a53983b.jpg";
 
 const NAV_LINKS = [
-  { label: "Главная", id: "home" },
   { label: "Каталог", id: "catalog" },
   { label: "О компании", id: "about" },
   { label: "Блог", id: "blog" },
   { label: "Доставка", id: "delivery" },
   { label: "Контакты", id: "contacts" },
+];
+
+const CATALOG_MENU = [
+  {
+    label: "Акции",
+    id: "catalog",
+    icon: "Tag" as const,
+    accent: true,
+    sub: [],
+  },
+  {
+    label: "Керамогранит",
+    id: "catalog",
+    icon: "Layers" as const,
+    accent: false,
+    sub: [
+      { label: "Для пола", id: "catalog" },
+      { label: "Для стен", id: "catalog" },
+    ],
+  },
 ];
 
 const PRODUCTS = [
@@ -61,6 +80,7 @@ export default function Index() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [city, setCity] = useState("Москва");
   const [cityOpen, setCityOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const [filterColor, setFilterColor] = useState("all");
   const [filterMaterial, setFilterMaterial] = useState("Все");
   const [filterSize, setFilterSize] = useState("Все");
@@ -115,6 +135,16 @@ export default function Index() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [searchOpen]);
+
+  useEffect(() => {
+    if (!catalogOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-catalog-menu]")) setCatalogOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [catalogOpen]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -219,7 +249,53 @@ export default function Index() {
           </div>
 
           <nav className="hidden lg:flex items-center gap-5 flex-shrink-0">
-            {NAV_LINKS.map((link) => (
+            {/* CATALOG MEGA MENU */}
+            <div className="relative" data-catalog-menu>
+              <button
+                onClick={() => setCatalogOpen((v) => !v)}
+                className={`nav-link flex items-center gap-1 text-sm font-body font-medium transition-colors ${catalogOpen ? "text-orange-600" : "text-gray-600 hover:text-orange-600"}`}
+              >
+                Каталог
+                <Icon name={catalogOpen ? "ChevronUp" : "ChevronDown"} size={14} />
+              </button>
+
+              {catalogOpen && (
+                <div className="absolute top-full left-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border overflow-hidden z-50" style={{ borderColor: "hsl(30 20% 88%)" }}>
+                  {CATALOG_MENU.map((item) => (
+                    <div key={item.label}>
+                      <button
+                        onClick={() => { if (item.sub.length === 0) { scrollTo(item.id); setCatalogOpen(false); } }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-body font-medium transition-colors text-left hover:bg-orange-50 ${item.sub.length > 0 ? "cursor-default" : ""}`}
+                      >
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: item.accent ? "hsl(16 85% 48%)" : "hsl(30 20% 93%)" }}>
+                          <Icon name={item.icon} size={14} style={{ color: item.accent ? "white" : "hsl(16 85% 48%)" }} />
+                        </div>
+                        <span style={{ color: item.accent ? "hsl(16 85% 48%)" : "hsl(20 15% 15%)" }}>{item.label}</span>
+                        {item.accent && <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "hsl(52 95% 52%)", color: "hsl(20 15% 10%)" }}>−10%</span>}
+                      </button>
+
+                      {item.sub.length > 0 && (
+                        <div className="border-t" style={{ borderColor: "hsl(30 20% 92%)" }}>
+                          {item.sub.map((sub) => (
+                            <button
+                              key={sub.label}
+                              onClick={() => { scrollTo(sub.id); setCatalogOpen(false); }}
+                              className="w-full flex items-center gap-3 pl-14 pr-4 py-2.5 text-sm font-body text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-colors text-left"
+                            >
+                              <Icon name="ChevronRight" size={13} className="text-gray-300 flex-shrink-0" />
+                              {sub.label}
+                            </button>
+                          ))}
+                          <div className="h-1" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {NAV_LINKS.filter((l) => l.id !== "catalog").map((link) => (
               <button
                 key={link.id}
                 onClick={() => scrollTo(link.id)}
