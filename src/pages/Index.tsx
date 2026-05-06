@@ -270,13 +270,13 @@ export default function Index() {
                 </span>
               )}
             </button>
-            <button
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium text-white transition-all hover:opacity-90"
-              style={{ background: "hsl(16 85% 48%)" }}
+            <a
+              href="tel:88125662308"
+              className="hidden sm:flex flex-col items-end leading-none gap-0.5 hover:opacity-80 transition-opacity"
             >
-              <Icon name="Phone" size={15} />
-              Заказать звонок
-            </button>
+              <span className="font-display font-bold text-base tracking-wide" style={{ color: "hsl(20 15% 10%)" }}>8 (812) 566-2308</span>
+              <span className="text-xs font-body" style={{ color: "hsl(20 10% 55%)" }}>ПН – ВС: 9:00 – 21:00</span>
+            </a>
             <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
               <Icon name={mobileOpen ? "X" : "Menu"} size={22} />
             </button>
