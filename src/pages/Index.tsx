@@ -107,6 +107,16 @@ export default function Index() {
   }, [cityOpen]);
 
   useEffect(() => {
+    if (!searchOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-search-bar]")) setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [searchOpen]);
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => { if (e.isIntersecting) setActiveNav(e.target.id); });
@@ -125,15 +135,90 @@ export default function Index() {
 
       {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-orange-100/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 h-16">
+          {/* LOGO */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ background: "hsl(16 85% 48%)" }}>
               <span className="text-white font-display font-bold text-sm">TF</span>
             </div>
-            <span className="font-display font-bold text-xl tracking-wide" style={{ color: "hsl(20 15% 10%)" }}>TERRAFORMA</span>
+            <span className="hidden lg:block font-display font-bold text-xl tracking-wide" style={{ color: "hsl(20 15% 10%)" }}>TERRAFORMA</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6">
+          {/* SEARCH BAR */}
+          <div className="flex-1 relative max-w-xl" data-search-bar>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border bg-white transition-all focus-within:border-orange-400 focus-within:shadow-md" style={{ borderColor: "hsl(30 20% 85%)" }}>
+              <Icon name="Search" size={17} style={{ color: "hsl(16 85% 48%)" }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Поиск по каталогу..."
+                className="flex-1 text-sm font-body outline-none bg-transparent placeholder-gray-400"
+                style={{ color: "hsl(20 15% 10%)" }}
+                onKeyDown={(e) => { if (e.key === "Escape") { setSearchOpen(false); setSearchQuery(""); } }}
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setSearchOpen(false); }} className="text-gray-300 hover:text-gray-500 transition-colors">
+                  <Icon name="X" size={15} />
+                </button>
+              )}
+            </div>
+
+            {/* DROPDOWN RESULTS */}
+            {searchOpen && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border overflow-hidden z-50" style={{ borderColor: "hsl(30 20% 88%)" }}>
+                {searchQuery.trim().length <= 1 ? (
+                  <div className="p-4">
+                    <p className="text-xs text-gray-400 font-body mb-3 uppercase tracking-wide">Популярные запросы</p>
+                    <div className="flex flex-wrap gap-2">
+                      {["Керамогранит", "Мозаика", "60×60", "Белая плитка", "Терракот"].map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => setSearchQuery(tag)}
+                          className="px-3 py-1.5 rounded-full text-xs font-body border hover:border-orange-400 hover:text-orange-600 transition-all"
+                          style={{ borderColor: "hsl(30 20% 88%)", color: "hsl(20 15% 45%)" }}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="px-5 py-6 text-center">
+                    <p className="text-sm text-gray-500 font-body">Ничего не найдено по «{searchQuery}»</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-4 py-2 border-b" style={{ borderColor: "hsl(30 20% 92%)" }}>
+                      <span className="text-xs text-gray-400 font-body">Найдено: <b className="text-gray-700">{searchResults.length}</b></span>
+                    </div>
+                    {searchResults.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => { scrollTo("catalog"); setSearchOpen(false); setSearchQuery(""); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50 transition-colors border-b last:border-0 text-left"
+                        style={{ borderColor: "hsl(30 20% 92%)" }}
+                      >
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style={{ background: "hsl(30 20% 95%)" }}>
+                          {p.img}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-display font-semibold text-sm truncate" style={{ color: "hsl(20 15% 10%)" }}>{p.name}</div>
+                          <div className="text-xs text-gray-400 font-body">{p.material} · {p.size} см</div>
+                        </div>
+                        <div className="font-display font-bold text-sm flex-shrink-0" style={{ color: "hsl(16 85% 48%)" }}>
+                          {p.price.toLocaleString()} ₽
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <nav className="hidden lg:flex items-center gap-5 flex-shrink-0">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.id}
@@ -145,9 +230,9 @@ export default function Index() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* CITY PICKER */}
-            <div className="relative hidden sm:block" data-city-picker>
+            <div className="relative hidden md:block" data-city-picker>
               <button
                 onClick={() => setCityOpen((v) => !v)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-body font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all"
@@ -157,7 +242,7 @@ export default function Index() {
                 <Icon name={cityOpen ? "ChevronUp" : "ChevronDown"} size={14} />
               </button>
               {cityOpen && (
-                <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-orange-100/60 py-1 z-50">
+                <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-orange-100/60 py-1 z-50">
                   {CITIES.map((c) => (
                     <button
                       key={c}
@@ -172,14 +257,6 @@ export default function Index() {
                 </div>
               )}
             </div>
-
-            <button
-              onClick={() => { setSearchOpen(true); setSearchQuery(""); }}
-              className="p-2 rounded-full hover:bg-orange-50 transition-colors"
-              aria-label="Поиск"
-            >
-              <Icon name="Search" size={20} />
-            </button>
 
             <button
               onClick={() => scrollTo("catalog")}
