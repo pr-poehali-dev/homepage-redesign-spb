@@ -6,6 +6,7 @@ const HERO_IMAGE = "https://cdn.poehali.dev/projects/848639bc-f2ca-455c-9fae-6c8
 const NAV_LINKS = [
   { label: "Акции", id: "catalog" },
   { label: "Готовые решения", id: "about" },
+  { label: "Доставка", id: "delivery" },
   { label: "Оплата", id: "delivery" },
   { label: "Магазины", id: "contacts" },
 ];
