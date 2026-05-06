@@ -42,6 +42,11 @@ const BLOG_POSTS = [
   { date: "2 апр 2026", tag: "Кейс", title: "Проект 'Лофт на Садовом': 200 м² в одном стиле", desc: "Как мы подобрали единую концепцию для квартиры с открытой планировкой.", emoji: "🏠" },
 ];
 
+const CITIES = [
+  "Москва", "Санкт-Петербург", "Краснодар", "Екатеринбург",
+  "Новосибирск", "Казань", "Нижний Новгород", "Ростов-на-Дону",
+];
+
 const MARQUEE_ITEMS = [
   "Бесплатная доставка от 50 000 ₽",
   "Более 3 000 позиций в наличии",
@@ -54,6 +59,8 @@ const MARQUEE_ITEMS = [
 export default function Index() {
   const [activeNav, setActiveNav] = useState("home");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [city, setCity] = useState("Москва");
+  const [cityOpen, setCityOpen] = useState(false);
   const [filterColor, setFilterColor] = useState("all");
   const [filterMaterial, setFilterMaterial] = useState("Все");
   const [filterSize, setFilterSize] = useState("Все");
@@ -78,6 +85,16 @@ export default function Index() {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    if (!cityOpen) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-city-picker]")) setCityOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [cityOpen]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -119,6 +136,33 @@ export default function Index() {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* CITY PICKER */}
+            <div className="relative hidden sm:block" data-city-picker>
+              <button
+                onClick={() => setCityOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-body font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all"
+              >
+                <Icon name="MapPin" size={14} style={{ color: "hsl(16 85% 48%)" }} />
+                {city}
+                <Icon name={cityOpen ? "ChevronUp" : "ChevronDown"} size={14} />
+              </button>
+              {cityOpen && (
+                <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-orange-100/60 py-1 z-50">
+                  {CITIES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => { setCity(c); setCityOpen(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm font-body transition-colors flex items-center gap-2 ${c === city ? "text-orange-600 font-medium bg-orange-50" : "text-gray-700 hover:bg-gray-50"}`}
+                    >
+                      {c === city && <Icon name="Check" size={13} style={{ color: "hsl(16 85% 48%)" }} />}
+                      {c !== city && <span className="w-[13px]" />}
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
               onClick={() => scrollTo("catalog")}
               className="relative p-2 rounded-full hover:bg-orange-50 transition-colors"
