@@ -66,6 +66,8 @@ export default function Index() {
   const [filterSize, setFilterSize] = useState("Все");
   const [filterPrice, setFilterPrice] = useState(5000);
   const [cart, setCart] = useState<number[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filtered = PRODUCTS.filter((p) => {
     if (filterColor !== "all" && p.color !== filterColor) return false;
@@ -74,6 +76,14 @@ export default function Index() {
     if (p.price > filterPrice) return false;
     return true;
   });
+
+  const searchResults = searchQuery.trim().length > 1
+    ? PRODUCTS.filter((p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.material.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.size.includes(searchQuery)
+      )
+    : [];
 
   const addToCart = (id: number) => {
     setCart((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
@@ -162,6 +172,14 @@ export default function Index() {
                 </div>
               )}
             </div>
+
+            <button
+              onClick={() => { setSearchOpen(true); setSearchQuery(""); }}
+              className="p-2 rounded-full hover:bg-orange-50 transition-colors"
+              aria-label="Поиск"
+            >
+              <Icon name="Search" size={20} />
+            </button>
 
             <button
               onClick={() => scrollTo("catalog")}
@@ -672,6 +690,95 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* SEARCH OVERLAY */}
+      {searchOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col"
+          style={{ background: "hsl(20 15% 10% / 0.6)", backdropFilter: "blur(8px)" }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) { setSearchOpen(false); } }}
+        >
+          <div className="bg-white w-full shadow-2xl">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5">
+              <div className="flex items-center gap-3">
+                <Icon name="Search" size={22} style={{ color: "hsl(16 85% 48%)" }} />
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по каталогу... (плитка, керамогранит, размер)"
+                  className="flex-1 text-lg font-body outline-none bg-transparent placeholder-gray-400"
+                  style={{ color: "hsl(20 15% 10%)" }}
+                  onKeyDown={(e) => { if (e.key === "Escape") setSearchOpen(false); }}
+                />
+                <button
+                  onClick={() => setSearchOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <Icon name="X" size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 mt-4">
+            {searchQuery.trim().length <= 1 && (
+              <div className="bg-white rounded-2xl p-6 shadow-lg">
+                <p className="text-sm text-gray-400 font-body mb-4">Популярные запросы</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Керамогранит", "Мозаика", "60×60", "Белая плитка", "Терракот", "Ванная"].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setSearchQuery(tag)}
+                      className="px-4 py-2 rounded-full text-sm font-body border transition-all hover:border-orange-400 hover:text-orange-600"
+                      style={{ borderColor: "hsl(30 20% 88%)", color: "hsl(20 15% 40%)" }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {searchQuery.trim().length > 1 && searchResults.length === 0 && (
+              <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+                <Icon name="SearchX" size={40} className="mx-auto mb-3 text-gray-300" />
+                <p className="font-body text-gray-500">Ничего не найдено по запросу «{searchQuery}»</p>
+                <p className="text-sm text-gray-400 mt-1 font-body">Попробуйте другой запрос</p>
+              </div>
+            )}
+
+            {searchResults.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="px-5 py-3 border-b" style={{ borderColor: "hsl(30 20% 88%)" }}>
+                  <span className="text-xs text-gray-400 font-body">Найдено: <b className="text-gray-700">{searchResults.length}</b> товаров</span>
+                </div>
+                {searchResults.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { scrollTo("catalog"); setSearchOpen(false); }}
+                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-orange-50 transition-colors border-b last:border-0 text-left"
+                    style={{ borderColor: "hsl(30 20% 92%)" }}
+                  >
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: "hsl(30 20% 95%)" }}>
+                      {p.img}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display font-semibold text-sm" style={{ color: "hsl(20 15% 10%)" }}>{p.name}</div>
+                      <div className="text-xs text-gray-400 font-body">{p.material} · {p.size} см</div>
+                    </div>
+                    <div className="font-display font-bold" style={{ color: "hsl(16 85% 48%)" }}>
+                      {p.price.toLocaleString()} ₽
+                    </div>
+                    <Icon name="ArrowRight" size={16} className="text-gray-300 flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
